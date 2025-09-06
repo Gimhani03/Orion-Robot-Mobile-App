@@ -1,0 +1,55 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { StatusBar } from 'expo-status-bar';
+
+// Import screens
+import SplashScreen from './src/screens/SplashScreen';
+import SignInScreen from './src/screens/SignInScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import ChooseTopicScreen from './src/screens/ChooseTopicScreen';
+import AboutScreen from './src/screens/AboutScreen';
+import ReminderScreen from './src/screens/ReminderScreen';
+import ReviewsScreen from './src/screens/ReviewsScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import ChatScreen from './src/screens/ChatScreen';
+import MusicScreen from './src/screens/MusicScreen';
+
+// Import context
+import { ProfileProvider } from './src/context/ProfileContext';
+import { AuthProvider } from './src/context/AuthContext';
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <ProfileProvider>
+        <NavigationContainer>
+          <StatusBar style="auto" />
+          <Stack.Navigator 
+            initialRouteName="Splash"
+            screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Splash" component={SplashScreen} />
+          <Stack.Screen name="SignIn" component={SignInScreen} />
+          <Stack.Screen name="SignUp" component={SignUpScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="ChooseTopic" component={ChooseTopicScreen} />
+          <Stack.Screen name="About" component={AboutScreen} />
+          <Stack.Screen name="Reminder" component={ReminderScreen} />
+          <Stack.Screen name="Reviews" component={ReviewsScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Chat" component={ChatScreen} />
+          <Stack.Screen name="Music" component={MusicScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ProfileProvider>
+    </AuthProvider>
+  );
+}
