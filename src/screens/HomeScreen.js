@@ -28,12 +28,12 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {/* Get Started Button */}
-      <TouchableOpacity 
-        style={styles.getStartedButton}
-        onPress={() => navigation.navigate('ChooseTopic')}
-      >
-        <Text style={styles.getStartedButtonText}>GET STARTED</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.getStartedButton}
+          onPress={() => navigation.navigate('MoodOnboardingScreen')}
+        >
+          <Text style={styles.getStartedButtonText}>GET STARTED</Text>
+        </TouchableOpacity>
     </View>
   );
 }
