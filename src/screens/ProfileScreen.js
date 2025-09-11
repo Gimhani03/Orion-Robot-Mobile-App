@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -14,6 +14,15 @@ export default function ProfileScreen({ navigation }) {
   const { user, updateUser, token } = useAuth(); // Get token for API calls
   
   const [isEditing, setIsEditing] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  // Live validation for password match
+  const passwordsMatch = newPassword.length > 0 && confirmPassword.length > 0 && newPassword === confirmPassword;
+  const showValidationIcon = confirmPassword.length > 0;
 
   // Debug profile image state
   useEffect(() => {
@@ -533,6 +542,28 @@ export default function ProfileScreen({ navigation }) {
     });
   };
 
+  const handleChangePassword = () => {
+    setPasswordError('');
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Please fill all fields.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+    // TODO: Call API to change password
+    setShowChangePassword(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    Alert.alert('Success', 'Password changed successfully!');
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -545,6 +576,8 @@ export default function ProfileScreen({ navigation }) {
         >
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
+  {/* Add extra space below Log Out for visibility */}
+  <View style={{ paddingBottom: 40 }} />
         <Text style={styles.headerTitle}>Profile</Text>
         <TouchableOpacity 
           style={styles.editButton}
@@ -559,7 +592,7 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+  <ScrollView style={[styles.content, {paddingBottom: 80}]} showsVerticalScrollIndicator={false}>
         {/* Profile Image Section */}
         <View style={styles.profileImageSection}>
           <View style={styles.profileImageContainer}>
@@ -683,8 +716,7 @@ export default function ProfileScreen({ navigation }) {
         {/* Account Settings */}
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
-          
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity style={styles.settingItem} onPress={() => setShowChangePassword(true)}>
             <View style={styles.settingLeft}>
               <Ionicons name="lock-closed-outline" size={24} color="#666" />
               <Text style={styles.settingText}>Change Password</Text>
@@ -707,6 +739,27 @@ export default function ProfileScreen({ navigation }) {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#ccc" />
           </TouchableOpacity>
+          {/* Log Out Option */}
+          <TouchableOpacity style={[styles.settingItem, {marginBottom: 24}]} onPress={() => {
+            Alert.alert(
+              'Log Out',
+              'Are you sure you want to log out?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Log Out', style: 'destructive', onPress: () => {
+                    clearProfileData && clearProfileData();
+                    updateUser && updateUser(null);
+                    navigation.replace('SignIn');
+                  }
+                }
+              ]
+            );
+          }}>
+            <View style={styles.settingLeft}>
+              <Ionicons name="exit-outline" size={24} color="#e11d48" />
+              <Text style={[styles.settingText, { color: '#e11d48', fontWeight: 'bold' }]}>Log Out</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Action Buttons */}
@@ -723,6 +776,62 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      {/* Change Password Modal */}
+      <Modal
+        visible={showChangePassword}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowChangePassword(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Change Password</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Current Password"
+              placeholderTextColor="#888"
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder="New Password"
+              placeholderTextColor="#888"
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            <View style={styles.inputWithIcon}>
+              <TextInput
+                style={[styles.modalInput, { flex: 1 }]}
+                placeholder="Confirm New Password"
+                placeholderTextColor="#888"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              {showValidationIcon && (
+                passwordsMatch ? (
+                  <Ionicons name="checkmark-circle" size={22} color="#22c55e" style={styles.inputIcon} />
+                ) : (
+                  <Ionicons name="close-circle" size={22} color="#ef4444" style={styles.inputIcon} />
+                )
+              )}
+            </View>
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowChangePassword(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Bottom Navigation */}
       <BottomNavigation navigation={navigation} currentScreen="Profile" />
@@ -947,5 +1056,58 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 24,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 16,
+  },
+  modalInput: {
+    height: 48,
+    fontSize: 16,
+    color: '#000',
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#000',
+    marginBottom: 12,
+  },
+  inputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#000',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  inputIcon: {
+    position: 'absolute',
+    right: 12,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#e11d48',
+    marginBottom: 12,
+    textAlign: 'center',
   },
 });
