@@ -13,7 +13,7 @@ const profileRoutes = require('./routes/profile');
 const reviewRoutes = require('./routes/review');
 const todoRoutes = require('./routes/todo');
 const chatRoutes = require('./routes/chat');
-// const reminderRoutes = require('./routes/reminder'); // Temporarily disabled
+const reminderRoutes = require('./routes/reminder'); // Temporarily disabled
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -49,9 +49,9 @@ const corsOptions = {
       'http://localhost:19006', // Expo development server
       'http://localhost:5000',  // React web
       'exp://localhost:19000',  // Expo app
-      'http://192.168.1.4:19006', // Expo on physical device (corrected IP)
-      'http://192.168.1.4:5000',  // Your computer's actual network IP
-      'http://192.168.1.5:5000',
+      'http://192.168.1.3:19006', // Expo on physical device (corrected IP)
+      'http://192.168.1.3:5000',  // Your computer's actual network IP
+      'http://192.168.1.3:5000',
 
       process.env.FRONTEND_URL || 'http://localhost:19006'
     ];
@@ -132,7 +132,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/todos', todoRoutes);
 app.use('/api/chat', chatRoutes);
-// app.use('/api/reminders', reminderRoutes); // Temporarily disabled
+app.use('/api/reminders', reminderRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -153,7 +153,7 @@ app.listen(PORT, HOST, () => {
   console.log(`🚀 ORION Robot App Backend running on port ${PORT}`);
   console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`📱 Network access: http://192.168.1.5:${PORT}/api/health`);
+  console.log(`📱 Network access: http://192.168.1.3:${PORT}/api/health`);
   console.log(`🔗 Server listening on ${HOST}:${PORT}`);
 });
 
