@@ -20,6 +20,8 @@ import MusicScreen from './src/screens/MusicScreen';
 // Import context
 import { ProfileProvider } from './src/context/ProfileContext';
 import { AuthProvider } from './src/context/AuthContext';
+import { MusicPlayerProvider } from './src/context/MusicPlayerContext';
+// import MiniMusicPlayer from './src/components/MiniMusicPlayer';
 
 const Stack = createStackNavigator();
 
@@ -27,28 +29,32 @@ export default function App() {
   return (
     <AuthProvider>
       <ProfileProvider>
-        <NavigationContainer>
-          <StatusBar style="auto" />
-          <Stack.Navigator 
-            initialRouteName="Splash"
-            screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="SignIn" component={SignInScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="ChooseTopic" component={ChooseTopicScreen} />
-          <Stack.Screen name="About" component={AboutScreen} />
-          <Stack.Screen name="Reminder" component={ReminderScreen} />
-          <Stack.Screen name="Reviews" component={ReviewsScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
-          <Stack.Screen name="Chat" component={ChatScreen} />
-          <Stack.Screen name="Music" component={MusicScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+        <MusicPlayerProvider>
+          <NavigationContainer>
+            <StatusBar style="auto" />
+            {/* MiniMusicPlayer is now rendered only in MusicScreen */}
+            <Stack.Navigator 
+              initialRouteName="Splash"
+              screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="Splash" component={SplashScreen} />
+            <Stack.Screen name="SignIn" component={SignInScreen} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="MoodOnboardingScreen" component={require('./src/screens/MoodOnboardingScreen').default} />
+            <Stack.Screen name="ChooseTopic" component={ChooseTopicScreen} />
+            <Stack.Screen name="About" component={AboutScreen} />
+            <Stack.Screen name="Reminder" component={ReminderScreen} />
+            <Stack.Screen name="Reviews" component={ReviewsScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="Music" component={MusicScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+  </MusicPlayerProvider>
     </ProfileProvider>
     </AuthProvider>
   );
