@@ -133,6 +133,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/todos', todoRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/reminders', reminderRoutes);
+const moodRoutes = require('./routes/mood');
+app.use('/api/moods', moodRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
