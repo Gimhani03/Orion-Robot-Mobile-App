@@ -60,6 +60,29 @@ class JamendoAPI {
     }
   }
 
+    // Get tracks by mood (using mood as a tag or search query)
+    async getTracksByMood(mood, options = {}) {
+      try {
+        // Try searching by tag first, fallback to search query
+        const params = {
+          tags: mood,
+          limit: options.limit || JAMENDO_CONFIG.limit,
+          include: 'musicinfo',
+          groupby: 'artist_id',
+          ...options
+        };
+        let data = await this.makeRequest('tracks', params);
+        if (!data.results || data.results.length === 0) {
+          // Fallback: use mood as search query
+          data = await this.makeRequest('tracks', { search: mood, ...params });
+        }
+        return this.formatTracks(data.results || []);
+      } catch (error) {
+        console.error('Error getting tracks by mood:', error);
+        return FEATURED_TRACKS;
+      }
+    }
+
   // Get tracks by genre
   async getTracksByGenre(genre, options = {}) {
     try {
