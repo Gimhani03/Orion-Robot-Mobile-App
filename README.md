@@ -61,6 +61,93 @@ A comprehensive React Native mobile application built with Expo, featuring moder
 - **NativeWind**: Tailwind CSS integration for React Native
 
 ## 🛠 Tech Stack
+## 📁 Project Structure
+
+```
+orion/
+├── App.js
+├── README.md
+├── package.json
+├── app.json
+├── babel.config.js
+├── metro.config.js
+├── assets/
+│   ├── adaptive-icon.png
+│   ├── favicon.png
+│   ├── homelogo.png
+│   ├── icon.png
+│   ├── logo.png
+│   ├── robots.jpg
+│   └── robots/
+│       ├── jupe.jpg
+│       ├── loona.jpg
+│       ├── marz.jpg
+│       ├── nep.jpg
+│       ├── obayy.jpg
+│       ├── satu.jpg
+│       ├── uro.jpg
+│       └── vee.jpg
+├── backend/
+│   ├── server.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── chat.js
+│   │   ├── mood.js
+│   │   ├── music.js
+│   │   ├── profile.js
+│   │   ├── reminder.js
+│   │   ├── review.js
+│   │   ├── todo.js
+│   │   └── user.js
+│   ├── models/
+│   │   ├── MoodLog.js
+│   │   ├── Reminder.js
+│   │   ├── Review.js
+│   │   ├── Todo.js
+│   │   └── User.js
+│   ├── services/
+│   │   ├── jamendoAPI.js
+│   │   └── ...
+│   ├── utils/
+│   │   ├── cloudinary.js
+│   │   ├── email.js
+│   │   └── todoAPI.js
+│   └── ...
+├── src/
+│   ├── api/
+│   │   ├── chatAPI.js
+│   │   ├── todoAPI.js
+│   │   └── ...
+│   ├── components/
+│   │   ├── BottomNavigation.js
+│   │   ├── Button.js
+│   │   ├── ConnectionTest.js
+│   │   ├── MiniMusicPlayer.js
+│   │   ├── SignupTest.js
+│   │   └── ...
+│   ├── config/
+│   │   ├── api.js
+│   │   └── ...
+│   ├── context/
+│   │   ├── AuthContext.js
+│   │   ├── MusicPlayerContext.js
+│   │   └── ...
+│   ├── screens/
+│   │   ├── MusicScreen.js
+│   │   ├── ChooseTopicScreen.js
+│   │   ├── MoodSelectionScreen.js
+│   │   ├── AboutScreen.js
+│   │   ├── HomeScreen.js
+│   │   ├── SignInScreen.js
+│   │   ├── SignUpScreen.js
+│   │   └── ...
+│   ├── services/
+│   │   ├── jamendoAPI.js
+│   │   └── ...
+│   ├── styles.js
+│   └── ...
+└── ...
+```
 
 ### Frontend
 
@@ -68,6 +155,7 @@ A comprehensive React Native mobile application built with Expo, featuring moder
 - **Expo SDK 53** - Development platform and native APIs
 - **React Navigation v6** - Stack-based navigation system
 - **React Context API** - Global state management
+- **AsyncStorage** - Persistent local storage for user/session data
 - **Expo Vector Icons** - Comprehensive icon library
 - **Expo Image Picker** - Camera and gallery integration
 - **Expo Audio** - Modern audio playback and recording
@@ -80,17 +168,21 @@ A comprehensive React Native mobile application built with Expo, featuring moder
 ### Backend
 
 - **Node.js & Express.js** - REST API server
-- **MongoDB** - NoSQL database with Mongoose ODM
+- **MongoDB & Mongoose** - NoSQL database and ODM
 - **JWT Authentication** - Secure token-based auth
-- **Bcrypt** - Password hashing and security
+- **BcryptJS** - Password hashing and security
 - **CORS** - Cross-origin resource sharing
 - **Dotenv** - Environment variable management
+- **Express Rate Limit** - API rate limiting for security
+- **Nodemailer** - Email sending for notifications and verification
+- **Cloudinary** - Image upload and management
 
 ### AI & External APIs
 
 - **Google Gemini AI** - Advanced conversational AI (Gemini 1.5 Flash)
 - **Jamendo API** - Royalty-free music streaming
 - **Audio/Speech APIs** - Voice recording and text-to-speech
+- **Cloudinary API** - Image hosting and transformation
 
 ## 📱 Screens Overview
 
@@ -106,7 +198,8 @@ A comprehensive React Native mobile application built with Expo, featuring moder
 | **ReviewsScreen**     | Review system       | Add, edit, delete, rate (1-5 stars)     |
 | **ProfileScreen**     | User management     | Profile editing, image upload, settings |
 | **ChatScreen**        | AI Chatbot          | Gemini AI, voice recording, TTS         |
-| **MusicScreen**       | Music player        | Jamendo streaming, genre browsing       |
+| **MoodSelectionScreen** | Mood selection      | Choose and log mood, triggers mood-based music recommendations |
+| **MusicScreen**       | Music player        | Jamendo streaming, mood-based recommendations, mood display, stress/sad relief music, genre chips removed |
 
 ## 🚀 Getting Started
 
@@ -323,7 +416,6 @@ orion/
 ### AI Chatbot Features
 
 - **Google Gemini Integration**: Advanced conversational AI with context awareness
-- **Voice Recording**: Record questions and get AI responses
 - **Text-to-Speech**: AI responses read aloud automatically
 - **Chat History**: Persistent conversation storage in MongoDB
 - **Modern Audio API**: Replaced deprecated expo-permissions with Audio API
@@ -332,9 +424,7 @@ orion/
 ### Music Streaming Features
 
 - **Jamendo Integration**: Access thousands of royalty-free tracks
-- **Genre Browsing**: 8 music genres with color-coded chips
 - **Advanced Search**: Search by song title, artist, or keywords
-- **Full Player Controls**: Play, pause, skip, progress tracking
 - **Background Playback**: Music continues while using other features
 - **Mini & Full Player**: Compact and expanded player interfaces
 
