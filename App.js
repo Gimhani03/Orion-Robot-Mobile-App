@@ -9,6 +9,7 @@ import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import MoodSelectionScreen from './src/screens/MoodSelectionScreen';
 import ChooseTopicScreen from './src/screens/ChooseTopicScreen';
 import AboutScreen from './src/screens/AboutScreen';
 import ReminderScreen from './src/screens/ReminderScreen';
@@ -44,7 +45,7 @@ export default function App() {
             <Stack.Screen name="SignUp" component={SignUpScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="MoodOnboardingScreen" component={require('./src/screens/MoodOnboardingScreen').default} />
+            <Stack.Screen name="MoodSelection" component={MoodSelectionScreen} />
             <Stack.Screen name="ChooseTopic" component={ChooseTopicScreen} />
             <Stack.Screen name="About" component={AboutScreen} />
             <Stack.Screen name="Reminder" component={ReminderScreen} />
