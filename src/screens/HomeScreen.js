@@ -1,39 +1,80 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen({ navigation }) {
+  const { user } = useAuth();
+  const [checkingMood, setCheckingMood] = useState(true);
+  const [showGetStarted, setShowGetStarted] = useState(false);
+
+  useEffect(() => {
+    const checkMoodLoggedToday = async () => {
+      if (!user || !(user.id || user._id)) {
+        setShowGetStarted(true);
+        setCheckingMood(false);
+        return;
+      }
+      try {
+        const res = await fetch(`http://192.168.1.3:5000/api/moods/${user.id || user._id}/latest`);
+        const result = await res.json();
+        if (result.success && result.data) {
+          const moodDate = new Date(result.data.timestamp);
+          const now = new Date();
+          if (
+            moodDate.getFullYear() === now.getFullYear() &&
+            moodDate.getMonth() === now.getMonth() &&
+            moodDate.getDate() === now.getDate()
+          ) {
+            // Mood already logged today, show Get Started button
+            setShowGetStarted(true);
+            setCheckingMood(false);
+            return;
+          }
+        }
+        // Mood not logged today, show mood selection
+        navigation.replace('MoodSelection');
+      } catch (error) {
+        setShowGetStarted(true);
+      } finally {
+        setCheckingMood(false);
+      }
+    };
+    checkMoodLoggedToday();
+  }, [user]);
+
+  if (checkingMood) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#4f8ef7" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      
       {/* Header */}
       <Text style={styles.welcomeText}>Welcome to the</Text>
       <Text style={styles.appNameText}>ORION ROBOT APP</Text>
-
       {/* Illustration */}
       <View style={styles.illustrationContainer}>
-        {/* Background decorative elements */}
         <View style={styles.decorativeElement1} />
         <View style={styles.decorativeElement2} />
         <View style={styles.decorativeElement3} />
-        
-        {/* Main illustration - robot figure */}
         <View style={styles.robotContainer}>
-         
-         <Image source={require('../../assets/homelogo.png')} style={{ width: 280, height: 230, borderRadius: 15 }} />
-          
-          
+          <Image source={require('../../assets/homelogo.png')} style={{ width: 280, height: 230, borderRadius: 15 }} />
         </View>
       </View>
-
       {/* Get Started Button */}
+      {showGetStarted && (
         <TouchableOpacity 
           style={styles.getStartedButton}
-          onPress={() => navigation.navigate('MoodOnboardingScreen')}
+          onPress={() => navigation.navigate('ChooseTopic')}
         >
           <Text style={styles.getStartedButtonText}>GET STARTED</Text>
         </TouchableOpacity>
+      )}
     </View>
   );
 }
