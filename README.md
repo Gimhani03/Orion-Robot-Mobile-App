@@ -29,15 +29,19 @@ A comprehensive React Native mobile application built with Expo, featuring moder
 - **Modern Audio API**: Updated from deprecated expo-permissions to Audio API
 - **Real-time Responses**: Streaming AI responses with loading indicators
 
-### 🎵 Music Streaming
+### 🎵 Music Streaming & Mood-Based Recommendations
 
 - **Jamendo API Integration**: Access to thousands of royalty-free tracks
-- **Genre-based Browsing**: Pop, Rock, Electronic, Jazz, Classical, Folk, Instrumental, Ambient
+- **Mood-Based Music Recommendations**: Music suggestions are personalized based on the user's logged mood (happy, sad, stressed, etc.)
+- **Stress Relief Music**: If user's mood is "stressed", relaxing genres (chill, ambient, relax, calm, meditation) are recommended
+- **Uplifting Music for Sad Mood**: If user's mood is "sad", uplifting and comforting genres (uplifting, happy, hope, comfort, acoustic, positive, inspirational, chill) are recommended
+- **Mood Display**: User's current mood is shown at the top of the Music screen
 - **Advanced Search**: Search for songs and artists
 - **Full Music Player**: Play/pause, progress tracking, time display
 - **Mini Player**: Persistent player while browsing
 - **Full-Screen Player**: Complete interface with album art and controls
 - **Background Playback**: Music continues while navigating
+- **Genre Chips Removed**: Genre selection chips (Jazz, Pop, Rock, etc.) have been removed for a cleaner UI
 
 ### 🎯 Interactive Features
 
