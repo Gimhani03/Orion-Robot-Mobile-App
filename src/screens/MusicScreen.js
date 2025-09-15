@@ -7,16 +7,64 @@ import jamendoAPI from '../services/jamendoAPI';
 import MiniMusicPlayer from '../components/MiniMusicPlayer';
 import BottomNavigation from '../components/BottomNavigation';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function MusicScreen({ navigation }) {
   const [tracks, setTracks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('pop');
+  const [userMood, setUserMood] = useState(null);
   const { playTrack } = useMusicPlayer();
+  const { user } = useAuth();
+  const userId = user?._id || user?.id;
+  console.log('MusicScreen user:', user);
+  console.log('MusicScreen userId:', userId);
 
   useEffect(() => {
-    loadTracks(selectedGenre);
+    // Fetch latest mood for user
+    const fetchMoodAndMusic = async () => {
+      if (!userId) {
+        console.log('No userId, skipping mood/music fetch');
+        return;
+      }
+      try {
+        const res = await fetch(`http://192.168.1.3:5000/api/moods/${userId}/latest`);
+        const json = await res.json();
+        console.log('Mood API response:', json);
+        if (json.success && json.data) {
+          setUserMood(json.data.mood);
+          setIsLoading(true);
+          let moodQuery = json.data.mood;
+          let moodTracks = [];
+          // Map 'stressed' to relaxing keywords and use search query
+          if (moodQuery && moodQuery.toLowerCase() === 'stressed') {
+            moodTracks = await jamendoAPI.searchTracks('chill ambient relax calm meditation', { limit: 20 });
+          } else if (moodQuery && moodQuery.toLowerCase() === 'sad') {
+            moodTracks = await jamendoAPI.searchTracks('uplifting happy hope comfort acoustic positive inspirational chill', { limit: 20 });
+          } else {
+            moodTracks = await jamendoAPI.getTracksByMood(moodQuery, { limit: 20 });
+          }
+          console.log('Jamendo moodTracks:', moodTracks);
+          setTracks(moodTracks);
+        } else {
+          console.log('No mood data, loading by genre');
+          loadTracks(selectedGenre);
+        }
+      } catch (err) {
+        console.log('Error fetching mood/music:', err);
+        loadTracks(selectedGenre);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMoodAndMusic();
+  }, []);
+
+  useEffect(() => {
+    if (!userMood) {
+      loadTracks(selectedGenre);
+    }
   }, [selectedGenre]);
 
   const loadTracks = async (genre) => {
@@ -80,6 +128,12 @@ export default function MusicScreen({ navigation }) {
         <Text style={styles.headerTitle}>ORION Music</Text>
         <View style={{ width: 40 }} />
       </View>
+      {/* Show user's mood */}
+      {userMood && (
+        <View style={{ alignItems: 'center', marginBottom: 10 }}>
+          <Text style={{ color: '#007AFF', fontSize: 16, fontWeight: 'bold' }}>Your Mood: {userMood}</Text>
+        </View>
+      )}
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBox}>
@@ -100,10 +154,7 @@ export default function MusicScreen({ navigation }) {
           )}
         </View>
       </View>
-      {/* Genre Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScroll} contentContainerStyle={styles.genreScrollContent}>
-        {MUSIC_GENRES.map(renderGenreChip)}
-      </ScrollView>
+  {/* Genre Chips removed as requested */}
       {/* Track List */}
       <ScrollView style={styles.trackList} showsVerticalScrollIndicator={false}>
         {isLoading ? (
