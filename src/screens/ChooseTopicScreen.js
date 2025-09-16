@@ -7,6 +7,52 @@ import BottomNavigation from '../components/BottomNavigation';
 import todoAPI from '../api/todoAPI';
 
 export default function ChooseTopicScreen({ navigation }) {
+  // Delete todo with confirmation
+  const handleDeleteTask = (id) => {
+    Alert.alert(
+      'Delete Task',
+      'Are you sure you want to delete this task?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await todoAPI.deleteTodo(id);
+              setTasks(tasks.filter(task => task.id !== id));
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete task.');
+            }
+          }
+        }
+      ]
+    );
+  };
+  // Save edited todo text and exit edit mode
+  const handleSaveEdit = async () => {
+    if (!editingText.trim()) return;
+    try {
+      await todoAPI.updateTodo(editingTaskId, { text: editingText });
+      setTasks(tasks.map(task =>
+        task.id === editingTaskId ? { ...task, text: editingText } : task
+      ));
+      setEditingTaskId(null);
+      setEditingText('');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save changes.');
+    }
+  };
+  // Ensure handleEditTask is defined
+  const handleEditTask = (task) => {
+    setEditingTaskId(task.id);
+    setEditingText(task.text);
+  };
+
+  // Ensure handleDeleteTask is defined (already patched above)
+  // If already present, this will not duplicate
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingText, setEditingText] = useState('');
   const { profileImage } = useProfile();
   const [newTask, setNewTask] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -138,6 +184,46 @@ export default function ChooseTopicScreen({ navigation }) {
   };
 
   const toggleTask = async (id) => {
+  const handleEditTask = (task) => {
+    setEditingTaskId(task.id);
+    setEditingText(task.text);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingText.trim()) return;
+    try {
+      const updatedTodo = await todoAPI.updateTodo(editingTaskId, { text: editingText });
+      setTasks(tasks.map(task =>
+        task.id === editingTaskId ? { ...task, text: updatedTodo.text } : task
+      ));
+      setEditingTaskId(null);
+      setEditingText('');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to edit task.');
+    }
+  };
+
+  const handleDeleteTask = (id) => {
+    Alert.alert(
+      'Delete Task',
+      'Are you sure you want to delete this task?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await todoAPI.deleteTodo(id);
+              setTasks(tasks.filter(task => task.id !== id));
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete task.');
+            }
+          }
+        }
+      ]
+    );
+  };
     try {
       const updatedTodo = await todoAPI.toggleTodo(id);
       
@@ -257,25 +343,49 @@ export default function ChooseTopicScreen({ navigation }) {
               </View>
             ) : (
               filteredTasks.map((task) => (
-                <TouchableOpacity
-                  key={task.id}
-                  style={styles.taskItem}
-                  onPress={() => toggleTask(task.id)}
-                >
-                  <View style={styles.taskCheckbox}>
-                    {task.completed ? (
-                      <Ionicons name="checkmark" size={16} color="green" />
-                    ) : (
-                      <View style={styles.emptyCheckbox} />
-                    )}
+                <View key={task.id} style={styles.taskItemRow}>
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <TouchableOpacity
+                      style={styles.taskItem}
+                      onPress={() => toggleTask(task.id)}
+                    >
+                      <View style={styles.taskCheckbox}>
+                        {task.completed ? (
+                          <Ionicons name="checkmark" size={16} color="green" />
+                        ) : (
+                          <View style={styles.emptyCheckbox} />
+                        )}
+                      </View>
+                      {editingTaskId === task.id ? (
+                        <TextInput
+                          style={[styles.taskText, styles.editInput]}
+                          value={editingText}
+                          onChangeText={setEditingText}
+                          onSubmitEditing={handleSaveEdit}
+                          autoFocus
+                        />
+                      ) : (
+                        <Text style={[styles.taskText, task.completed && styles.completedTaskText]}>
+                          {task.text}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
                   </View>
-                  <Text style={[
-                    styles.taskText,
-                    task.completed && styles.completedTaskText
-                  ]}>
-                    {task.text}
-                  </Text>
-                </TouchableOpacity>
+                  <View style={styles.taskActions}>
+                    {editingTaskId === task.id ? (
+                      <TouchableOpacity onPress={handleSaveEdit} style={styles.actionButton}>
+                        <Ionicons name="checkmark" size={18} color="#007AFF" />
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity onPress={() => handleEditTask(task)} style={styles.actionButton}>
+                        <Ionicons name="pencil" size={18} color="#666" />
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity onPress={() => handleDeleteTask(task.id)} style={styles.actionButton}>
+                      <Ionicons name="trash" size={18} color="#ff4444" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
               ))
             )}
           </View>
@@ -289,6 +399,60 @@ export default function ChooseTopicScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  addTaskContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    marginHorizontal: 8,
+  },
+  taskList: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginHorizontal: 8,
+  },
+  taskItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 0,
+    minHeight: 48,
+    justifyContent: 'space-between',
+    gap: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    marginHorizontal: 8,
+    width: '100%',
+  },
+  taskActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    height: 40,
+    marginLeft: 'auto',
+  },
+  actionButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+    height: 40,
+    width: 40,
+  },
+  editInput: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    fontSize: 15,
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: 'white',
