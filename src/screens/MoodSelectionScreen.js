@@ -79,20 +79,20 @@ export default function MoodSelectionScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#111',
-    padding: 24,
+    backgroundColor: '#fff',
+    padding: 10,
     justifyContent: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#111',
     marginBottom: 24,
     textAlign: 'center',
   },
   moodRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginBottom: 32,
   },
   moodCard: {
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   moodLabel: {
     marginTop: 8,
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 13,
   },
   recommendBox: {
     backgroundColor: '#222',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   doneButton: {
-    backgroundColor: '#4f8ef7',
+    backgroundColor: '#111',
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
