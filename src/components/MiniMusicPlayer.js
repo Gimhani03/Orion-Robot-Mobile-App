@@ -2,9 +2,18 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
+import FullMusicPlayerScreen from '../screens/FullMusicPlayerScreen';
 
 export default function MiniMusicPlayer({ onOpenPlayer }) {
   const { currentTrack, isPlaying, togglePlayPause, setPlayerVisible } = useMusicPlayer();
+  // Use local state to control full screen player
+  const [fullPlayerVisible, setFullPlayerVisible] = React.useState(false);
+  const handleOpenFullPlayer = () => {
+    setFullPlayerVisible(true);
+  };
+  const handleCloseFullPlayer = () => {
+    setFullPlayerVisible(false);
+  };
 
   if (!currentTrack) {
     console.log('[MiniMusicPlayer] Not visible: No currentTrack');
@@ -12,17 +21,22 @@ export default function MiniMusicPlayer({ onOpenPlayer }) {
   }
   console.log('[MiniMusicPlayer] Visible: Track =', currentTrack.name);
 
+  const artist = currentTrack.artist || currentTrack.artist_name || 'Unknown Artist';
   return (
-    <TouchableOpacity style={[styles.miniPlayer, { zIndex: 9999, elevation: 10 }]} onPress={() => setPlayerVisible(true)}>
-      <Image source={{ uri: currentTrack.image }} style={styles.miniPlayerImage} />
-      <View style={styles.miniPlayerInfo}>
-        <Text style={styles.miniPlayerTrack} numberOfLines={1}>{currentTrack.name}</Text>
-        <Text style={styles.miniPlayerArtist} numberOfLines={1}>{currentTrack.artist}</Text>
-      </View>
-      <TouchableOpacity onPress={togglePlayPause} style={styles.miniPlayerButton}>
-        <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#007AFF" />
+    <>
+      <TouchableOpacity style={[styles.miniPlayer, { zIndex: 9999, elevation: 10 }]} onPress={handleOpenFullPlayer}>
+        <Image source={{ uri: currentTrack.image }} style={styles.miniPlayerImage} />
+        <View style={styles.miniPlayerInfo}>
+          <Text style={styles.miniPlayerTrack} numberOfLines={1}>{currentTrack.name}</Text>
+          <Text style={styles.miniPlayerArtist} numberOfLines={1}>{artist}</Text>
+        </View>
+        <TouchableOpacity onPress={togglePlayPause} style={styles.miniPlayerButton}>
+          <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#007AFF" />
+        </TouchableOpacity>
       </TouchableOpacity>
-    </TouchableOpacity>
+      {/* Full screen player modal */}
+      <FullMusicPlayerScreen visible={fullPlayerVisible} onClose={handleCloseFullPlayer} />
+    </>
   );
 }
 
