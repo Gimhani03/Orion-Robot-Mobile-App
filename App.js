@@ -1,4 +1,5 @@
 import React from 'react';
+import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -39,24 +40,25 @@ export default function App() {
               screenOptions={{
               headerShown: false,
             }}
-          >
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen name="SignIn" component={SignInScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="MoodSelection" component={MoodSelectionScreen} />
-            <Stack.Screen name="ChooseTopic" component={ChooseTopicScreen} />
-            <Stack.Screen name="About" component={AboutScreen} />
-            <Stack.Screen name="Reminder" component={ReminderScreen} />
-            <Stack.Screen name="Reviews" component={ReviewsScreen} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="Chat" component={ChatScreen} />
-            <Stack.Screen name="Music" component={MusicScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-  </MusicPlayerProvider>
-    </ProfileProvider>
+            >
+              <Stack.Screen name="Splash" component={SplashScreen} />
+              <Stack.Screen name="SignIn" component={SignInScreen} />
+              <Stack.Screen name="SignUp" component={SignUpScreen} />
+              <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="MoodSelection" component={MoodSelectionScreen} />
+              <Stack.Screen name="ChooseTopic" component={ChooseTopicScreen} />
+              <Stack.Screen name="About" component={AboutScreen} />
+              <Stack.Screen name="Reminder" component={ReminderScreen} />
+              <Stack.Screen name="Reviews" component={ReviewsScreen} />
+              <Stack.Screen name="Profile" component={ProfileScreen} />
+              <Stack.Screen name="Chat" component={ChatScreen} />
+              <Stack.Screen name="Music" component={MusicScreen} />
+            </Stack.Navigator>
+            <Toast />
+          </NavigationContainer>
+        </MusicPlayerProvider>
+      </ProfileProvider>
     </AuthProvider>
   );
 }
