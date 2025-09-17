@@ -6,6 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import NavigationBar from 'react-native-navigation-bar-color';
 import BottomNavigation from '../components/BottomNavigation';
+import Toast from 'react-native-toast-message';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ReminderScreen({ navigation }) {
   const [editingReminder, setEditingReminder] = useState(null);
@@ -14,16 +16,14 @@ export default function ReminderScreen({ navigation }) {
   const [reminders, setReminders] = useState([]);
   const [loadingReminders, setLoadingReminders] = useState(false);
   const { user } = useAuth();
-  const [selectedHour, setSelectedHour] = useState(11);
-  const [selectedMinute, setSelectedMinute] = useState(30);
-  const [selectedPeriod, setSelectedPeriod] = useState('AM');
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDays, setSelectedDays] = useState(['M', 'T', 'W', 'TH', 'F']);
 
   const hourScrollRef = useRef(null);
   const minuteScrollRef = useRef(null);
+  const toastTimersRef = useRef({});
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
   const days = [
     { short: 'SU', full: 'Sunday' },
     { short: 'M', full: 'Monday' },
@@ -34,45 +34,11 @@ export default function ReminderScreen({ navigation }) {
     { short: 'S', full: 'Saturday' }
   ];
 
-  const handleHourScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / 40);
-    const hour = hours[index];
-    if (hour && hour !== selectedHour) {
-      setSelectedHour(hour);
-    }
-  };
-
-  const handleMinuteScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / 40);
-    const minute = minutes[index];
-    if (minute !== undefined && minute !== selectedMinute) {
-      setSelectedMinute(minute);
-    }
-  };
-
-  const scrollToHour = (hour) => {
-    const index = hours.indexOf(hour);
-    if (index !== -1 && hourScrollRef.current) {
-      const scrollY = index * 40;
-      hourScrollRef.current.scrollTo({ y: scrollY, animated: true });
-    }
-  };
-
-  const scrollToMinute = (minute) => {
-    const index = minutes.indexOf(minute);
-    if (index !== -1 && minuteScrollRef.current) {
-      const scrollY = index * 40;
-      minuteScrollRef.current.scrollTo({ y: scrollY, animated: true });
-    }
-  };
-
   useEffect(() => {
     // Initial scroll to selected values with proper centering
     setTimeout(() => {
-      scrollToHour(selectedHour);
-      scrollToMinute(selectedMinute);
+      // scrollToHour(selectedHour);
+      // scrollToMinute(selectedMinute);
     }, 200);
 
     // Fetch reminders for the user
@@ -100,7 +66,32 @@ export default function ReminderScreen({ navigation }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    // Clear previous timers
+    Object.values(toastTimersRef.current).forEach(clearTimeout);
+    toastTimersRef.current = {};
 
+    reminders.forEach(reminder => {
+      if (!reminder.date) return;
+      const reminderTime = new Date(reminder.date);
+      const now = new Date();
+      const diffMs = reminderTime - now - 30 * 60 * 1000;
+      console.log('Scheduling toast for:', reminder.title, 'at', new Date(reminderTime - 30 * 60 * 1000).toLocaleString(), 'in', diffMs, 'ms');
+      if (diffMs > 0) {
+        const timerId = setTimeout(() => {
+          console.log('Toast triggered for:', reminder.title);
+          Toast.show({
+            type: 'info',
+            text1: 'Study Reminder',
+            text2: `Your study reminder "${reminder.title || 'Study'}" is in 30 minutes!`,
+            position: 'top',
+            visibilityTime: 120000, // Show toast for 2 minutes
+          });
+        }, diffMs);
+        toastTimersRef.current[reminder._id || reminder.id] = timerId;
+      }
+    });
+  }, [reminders]);
 
   const toggleDay = (day) => {
     if (selectedDays.includes(day)) {
@@ -115,11 +106,20 @@ export default function ReminderScreen({ navigation }) {
       console.error('No user found. Please log in.');
       return;
     }
+    // Build reminder date from selected hour, minute, period, and today
+    let hour = selectedTime.getHours();
+    let minute = selectedTime.getMinutes();
+    const now = new Date();
+    const reminderDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0, 0);
+    // If the selected time is already past for today, set for tomorrow
+    if (reminderDate < now) {
+      reminderDate.setDate(reminderDate.getDate() + 1);
+    }
     const reminderData = {
       user: user.id || user._id,
       title: 'Study Reminder',
-      description: `Study at ${selectedHour}:${selectedMinute.toString().padStart(2, '0')} ${selectedPeriod} on ${selectedDays.join(', ')}`,
-      date: new Date(),
+      description: `Study at ${hour}:${minute.toString().padStart(2, '0')} on ${selectedDays.join(', ')}`,
+      date: reminderDate,
       isCompleted: false,
     };
     fetch('http://192.168.1.3:5000/api/reminders', {
@@ -130,7 +130,7 @@ export default function ReminderScreen({ navigation }) {
       body: JSON.stringify(reminderData),
     })
       .then(res => res.json())
-      .then(result => {
+  .then(result => {
         if (result.success) {
           console.log('Reminder saved:', result.data);
           navigation.goBack();
@@ -175,113 +175,27 @@ export default function ReminderScreen({ navigation }) {
 
         {/* Time Picker */}
         <View style={styles.timePickerContainer}>
-          <View style={styles.timePicker}>
-            {/* Hours */}
-            <View style={styles.timeColumn}>
-              <ScrollView 
-                ref={hourScrollRef}
-                showsVerticalScrollIndicator={false} 
-                snapToInterval={40}
-                decelerationRate="fast"
-                contentContainerStyle={styles.scrollContent}
-                onMomentumScrollEnd={handleHourScroll}
-              >
-                {hours.map((hour, index) => (
-                  <TouchableOpacity
-                    key={hour}
-                    style={styles.timeItem}
-                    onPress={() => {
-                      setSelectedHour(hour);
-                      scrollToHour(hour);
-                    }}
-                  >
-                    <Text style={styles.hiddenTimeText}>
-                      {hour}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              {/* Selection indicator overlay with 3 values */}
-              <View style={styles.selectionIndicator}>
-                <View style={styles.pickerWheel}>
-                  <Text style={styles.timeText}>
-                    {selectedHour === 1 ? 12 : selectedHour - 1}
-                  </Text>
-                  <Text style={styles.selectedTimeText}>{selectedHour}</Text>
-                  <Text style={styles.timeText}>
-                    {selectedHour === 12 ? 1 : selectedHour + 1}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Minutes */}
-            <View style={styles.timeColumn}>
-              <ScrollView 
-                ref={minuteScrollRef}
-                showsVerticalScrollIndicator={false}
-                snapToInterval={40}
-                decelerationRate="fast"
-                contentContainerStyle={styles.scrollContent}
-                onMomentumScrollEnd={handleMinuteScroll}
-              >
-                {minutes.map((minute, index) => (
-                  <TouchableOpacity
-                    key={minute}
-                    style={styles.timeItem}
-                    onPress={() => {
-                      setSelectedMinute(minute);
-                      scrollToMinute(minute);
-                    }}
-                  >
-                    <Text style={styles.hiddenTimeText}>
-                      {minute.toString().padStart(2, '0')}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              {/* Selection indicator overlay with 3 values */}
-              <View style={styles.selectionIndicator}>
-                <View style={styles.pickerWheel}>
-                  <Text style={styles.timeText}>
-                    {(selectedMinute === 0 ? 59 : selectedMinute - 1).toString().padStart(2, '0')}
-                  </Text>
-                  <Text style={styles.selectedTimeText}>{selectedMinute.toString().padStart(2, '0')}</Text>
-                  <Text style={styles.timeText}>
-                    {(selectedMinute === 59 ? 0 : selectedMinute + 1).toString().padStart(2, '0')}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* AM/PM */}
-            <View style={styles.timeColumn}>
-              <View style={styles.periodContainer}>
-                <TouchableOpacity 
-                  style={[styles.timeItem, styles.periodItem]}
-                  onPress={() => setSelectedPeriod('AM')}
-                >
-                  <Text style={[
-                    styles.timeText,
-                    selectedPeriod === 'AM' && styles.selectedTimeText
-                  ]}>
-                    AM
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.timeItem, styles.periodItem]}
-                  onPress={() => setSelectedPeriod('PM')}
-                >
-                  <Text style={[
-                    styles.timeText,
-                    selectedPeriod === 'PM' && styles.selectedTimeText
-                  ]}>
-                    PM
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+          <TouchableOpacity
+            style={{ padding: 16, backgroundColor: '#f3f4f6', borderRadius: 12, alignItems: 'center', marginBottom: 12 }}
+            onPress={() => setShowTimePicker(true)}
+          >
+            <Text style={{ fontSize: 18, color: '#222' }}>
+              {selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+            <Text style={{ fontSize: 14, color: '#666' }}>Tap to select time</Text>
+          </TouchableOpacity>
+          {showTimePicker && (
+            <DateTimePicker
+              value={selectedTime}
+              mode="time"
+              is24Hour={false}
+              display="spinner"
+              onChange={(event, date) => {
+                setShowTimePicker(false);
+                if (date) setSelectedTime(date);
+              }}
+            />
+          )}
         </View>
 
         {/* Day Selection */}
@@ -381,7 +295,7 @@ export default function ReminderScreen({ navigation }) {
                     <View>
                       <Text style={{ color: '#fff', fontWeight: 'bold' }}>{reminder.title}</Text>
                       <Text style={{ color: '#ccc', marginTop: 2 }}>{reminder.description}</Text>
-                      <Text style={{ color: '#4f8ef7', marginTop: 2, fontSize: 12 }}>Date: {new Date(reminder.date).toLocaleString()}</Text>
+                      <Text style={{ color: '#4f8ef7', marginTop: 2, fontSize: 12 }}>Date: <Text>{new Date(reminder.date).toLocaleString()}</Text></Text>
                       <View style={{ flexDirection: 'row', marginTop: 8 }}>
                         <TouchableOpacity
                           style={{ backgroundColor: '#4f8ef7', borderRadius: 8, padding: 8, marginRight: 8 }}
@@ -436,11 +350,12 @@ export default function ReminderScreen({ navigation }) {
             <Text style={styles.noThanksButtonText}>NO THANKS</Text>
           </TouchableOpacity>
         </View>
-        </View>
+        </View> {/* Close content View */}
       </ScrollView>
 
       {/* Bottom Navigation */}
       <BottomNavigation navigation={navigation} currentScreen="Reminder" />
+      <Toast />
     </View>
   );
 }
