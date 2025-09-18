@@ -318,23 +318,6 @@ export default function ReviewsScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Connection Status */}
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusIndicator, { backgroundColor: backendConnected ? '#4CAF50' : '#FF9800' }]}>
-          <Ionicons 
-            name={backendConnected ? 'cloud-done' : 'cloud-offline'} 
-            size={16} 
-            color="#fff" 
-          />
-          <Text style={styles.statusText}>
-            {backendConnected ? 'Backend Connected' : 'Offline Mode'}
-          </Text>
-        </View>
-        {isLoading && (
-          <Text style={styles.loadingText}>Loading...</Text>
-        )}
-      </View>
-
       {/* Content */}
       <View style={styles.content}>
         <View style={styles.statsContainer}>
