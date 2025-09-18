@@ -197,17 +197,40 @@ router.post('/forgot-password', async (req, res) => {
     
     // Send reset email
     try {
-      const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      const resetURL = `${process.env.FRONTEND_URL || 'http://localhost:19006'}/reset-password/${resetToken}`;
       
-      await sendEmail({
-        email: user.email,
-        subject: 'Password Reset - ORION Robot App',
-        message: `You have requested a password reset. Please click the following link to reset your password: ${resetURL}\n\nThis link will expire in 10 minutes.\n\nIf you didn't request this, please ignore this email.`
-      });
+      // For development/testing - log reset token to console
+      if (process.env.NODE_ENV === 'development') {
+        console.log('\n🔐 PASSWORD RESET TOKEN (Dev Mode):');
+        console.log('📧 Email:', user.email);
+        console.log('🔗 Reset Token:', resetToken);
+        console.log('🌐 Reset URL:', resetURL);
+        console.log('⏰ Expires at:', user.passwordResetExpires);
+        console.log('─────────────────────────────────────\n');
+      }
+      
+      // Try to send email, but don't fail if email service is not configured
+      try {
+        const emailResult = await sendEmail({
+          email: user.email,
+          subject: 'Password Reset - ORION Robot App',
+          message: `You have requested a password reset. Please click the following link to reset your password: ${resetURL}\n\nThis link will expire in 10 minutes.\n\nIf you didn't request this, please ignore this email.`,
+          resetURL: resetURL
+        });
+        
+        console.log('✅ Password reset email sent successfully:', emailResult.messageId);
+        
+      } catch (emailError) {
+        console.log('⚠️  Email sending failed (but token still generated):', emailError.message);
+        console.log('💡 Check EMAIL_SETUP_GUIDE.md for email configuration');
+      }
       
       res.status(200).json({
         success: true,
-        message: 'Password reset instructions sent to email'
+        message: 'Password reset instructions sent to email',
+        ...(process.env.NODE_ENV === 'development' && { 
+          dev_info: 'Check server console for reset token (development mode)' 
+        })
       });
       
     } catch (error) {
