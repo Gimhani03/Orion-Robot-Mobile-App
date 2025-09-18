@@ -18,6 +18,7 @@ import ReviewsScreen from './src/screens/ReviewsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import MusicScreen from './src/screens/MusicScreen';
+import NotificationScreen from './src/screens/NotificationScreen';
 
 // Import context
 import { ProfileProvider } from './src/context/ProfileContext';
@@ -54,6 +55,7 @@ export default function App() {
               <Stack.Screen name="Profile" component={ProfileScreen} />
               <Stack.Screen name="Chat" component={ChatScreen} />
               <Stack.Screen name="Music" component={MusicScreen} />
+              <Stack.Screen name="Notification" component={NotificationScreen} />
             </Stack.Navigator>
             <Toast />
           </NavigationContainer>
