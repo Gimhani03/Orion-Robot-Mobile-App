@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, ScrollView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons, FontAwesome5, Entypo, AntDesign, Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
 import BottomNavigation from '../components/BottomNavigation';
 import todoAPI from '../api/todoAPI';
+import MotivationalQuotesService from '../services/motivationalQuotes';
 
 export default function ChooseTopicScreen({ navigation }) {
   // Delete todo with confirmation
@@ -54,15 +57,55 @@ export default function ChooseTopicScreen({ navigation }) {
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingText, setEditingText] = useState('');
   const { profileImage } = useProfile();
+  const { user } = useAuth();
   const [newTask, setNewTask] = useState('');
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
+  const [motivationalQuote, setMotivationalQuote] = useState('" Welcome to your learning journey"');
+  const [userMood, setUserMood] = useState(null);
 
   // Load todos from backend when component mounts
   useEffect(() => {
     loadTodos();
+    fetchUserMoodAndQuote();
   }, []);
+
+  // Refresh motivational quote when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUserMoodAndQuote();
+    }, [])
+  );
+
+  const fetchUserMoodAndQuote = async () => {
+    if (!user || !(user.id || user._id)) {
+      // If no user, show default motivational message
+      setMotivationalQuote('" Welcome to your learning journey"');
+      return;
+    }
+    
+    try {
+      const res = await fetch(`http://192.168.1.4:5000/api/moods/${user.id || user._id}/latest`);
+      const result = await res.json();
+      if (result.success && result.data) {
+        setUserMood(result.data.mood);
+        
+        // Get mood-based quote
+        if (MotivationalQuotesService.hasMoodQuotes(result.data.mood)) {
+          const quoteData = MotivationalQuotesService.getQuoteWithMetadata(result.data.mood);
+          setMotivationalQuote(`" ${quoteData.quote}"`);
+        } else {
+          setMotivationalQuote('" Stay motivated and keep learning!"');
+        }
+      } else {
+        setMotivationalQuote('" Log your mood to get personalized motivation!"');
+      }
+    } catch (error) {
+      console.error('Error fetching mood:', error);
+      setMotivationalQuote('" Stay positive and keep learning!"');
+    }
+  };
 
   const loadTodos = async () => {
     try {
@@ -253,6 +296,9 @@ export default function ChooseTopicScreen({ navigation }) {
             <Text style={styles.headerText}>What brings you to the</Text>
             <Text style={styles.appNameText}>ORION ROBOT APP ?</Text>
           </View>
+          <TouchableOpacity style={styles.notificationIcon} onPress={() => navigation.navigate('Notification')}>
+            <Ionicons name="notifications-outline" size={24} color="#000" />
+          </TouchableOpacity>
         </View>
 
         {/* Topics Grid */}
@@ -284,7 +330,7 @@ export default function ChooseTopicScreen({ navigation }) {
 
         {/* Motivational Quote */}
         <View style={styles.quoteSection}>
-          <Text style={styles.quote}>" Don't Give Up On Your Dreams"</Text>
+          <Text style={styles.quote}>{motivationalQuote}</Text>
         </View>
 
         {/* Todos Section */}
@@ -461,9 +507,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 64,
     paddingBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
   headerTextContainer: {
     flex: 1,
+  },
+  notificationIcon: {
+    padding: 8,
+    marginTop: 4,
   },
   headerText: {
     textAlign: 'left',
