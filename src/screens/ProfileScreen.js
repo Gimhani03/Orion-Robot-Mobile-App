@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
-import { userAPI } from '../config/api';
+import { userAPI, authAPI } from '../config/api';
 import BottomNavigation from '../components/BottomNavigation';
 
 export default function ProfileScreen({ navigation }) {
@@ -542,7 +542,7 @@ export default function ProfileScreen({ navigation }) {
     });
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     setPasswordError('');
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordError('Please fill all fields.');
@@ -556,12 +556,40 @@ export default function ProfileScreen({ navigation }) {
       setPasswordError('Passwords do not match.');
       return;
     }
-    // TODO: Call API to change password
-    setShowChangePassword(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    Alert.alert('Success', 'Password changed successfully!');
+
+    try {
+      console.log('🔄 Changing password...');
+      
+      const passwordData = {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      };
+
+      const response = await authAPI.updatePassword(passwordData, token);
+      
+      if (response.success) {
+        console.log('✅ Password changed successfully');
+        setShowChangePassword(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setPasswordError('');
+        Alert.alert('Success', 'Password changed successfully!');
+      } else {
+        console.log('❌ Password change failed:', response.message);
+        setPasswordError(response.message || 'Failed to change password');
+      }
+    } catch (error) {
+      console.error('❌ Password change error:', error);
+      if (error.message.includes('Current password is incorrect')) {
+        setPasswordError('Current password is incorrect');
+      } else if (error.message.includes('New passwords do not match')) {
+        setPasswordError('New passwords do not match');
+      } else {
+        setPasswordError('Failed to change password. Please try again.');
+      }
+    }
   };
 
   return (
