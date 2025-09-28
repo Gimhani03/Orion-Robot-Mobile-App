@@ -1,6 +1,6 @@
 # ORION Robot Mobile App 🤖
 
-A comprehensive React Native mobile application built with Expo, featuring modern UI/UX design, complete user authentication with password recovery, profile management, AI chatbot, mood-based music streaming, and interactive robot-themed features. Perfect for STEM education and robot enthusiasts.
+A comprehensive React Native mobile application built with Expo, featuring modern UI/UX design, complete user authentication with password recovery, profile management, AI chatbot, mood-based music streaming, and interactive robot-themed features.
 
 ## ✨ Features
 
